@@ -49,6 +49,7 @@ h1 {
   font-size: 1.25rem;
 }
 
+
 .calendar-header{
   grid-column: 1 / -1;
   background: rgba(22,27,34,.85);
@@ -174,6 +175,54 @@ h1 {
 
 .event-item {
   padding-bottom: 10px;
+}
+
+.history-panel {
+  grid-column: 1 / -1;
+  background: rgba(22, 27, 34, 0.85);
+  border: var(--border-outline);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  max-width: 920px;
+  width: 100%;
+}
+
+.history-split {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.history-right {
+  border-left: 1px solid rgba(187, 134, 252, 0.22);
+  padding-left: 18px;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-item {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(187, 134, 252, 0.10);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-year {
+  font-weight: 800;
+  margin-right: 10px;
+  color: var(--text-main);
+}
+
+.muted {
+  opacity: 0.85;
 }
 
 @keyframes glow {

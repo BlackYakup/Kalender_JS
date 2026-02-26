@@ -21,6 +21,11 @@ const eventsByDate = {
   ]
 };
 
+// In der Funktion createBaseStructure(selector); wird eine 
+// HTML-Grundstruktur aufgebaut. In diesem Fall für ein Kalender.
+// Es werden Buttons hinzugefügt und jeweils Klassen für sie.
+// Bei der Initialisierung der Funktion muss man als Parameter
+// einen selector, also in diesem Fall #calendar, angeben.
 function createBaseStructure(selector) {
   const root = document.querySelector(selector);
 
@@ -52,6 +57,8 @@ function createBaseStructure(selector) {
   root.appendChild(infoPanel);
 }
 
+// Gibt Jahr, Monat + 1 (also fängt nicht mehr bei 0, sondern bei 1 an),
+// Tag an. In diesem wird 0 benutzt, da 0 der letzte Tag des Monats ist.
 function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
@@ -63,15 +70,21 @@ function getFirstWeekdayOfMonth(year, month) {
 }
 
 // ===== Helpers =====
+
+// Durch die Funktion pad2(n); wird die Datumszahl um 0 davor ergänzt,
+// falls es nur einstellig ist.
 function pad2(n) {
   return String(n).padStart(2, "0");
 }
 
+// Die Funktion toKey(year, monthIndex, day); formatiert das Datum.
 function toKey(year, monthIndex, day) {
   // monthIndex: 0-11
   return `${year}-${pad2(monthIndex + 1)}-${pad2(day)}`;
 }
 
+// Die Funktion formatGermanDate(year, monthIndex, day); formatiert
+// das Datum vom Englischen in das Deutsche.
 function formatGermanDate(year, monthIndex, day) {
   return `${day}. ${monthNames[monthIndex]} ${year}`;
 }
@@ -82,6 +95,10 @@ let viewMonth = today.getMonth();
 let selectedKey = toKey(today.getFullYear(), today.getMonth(), today.getDate());
 
 // ===== Right Panel Rendering =====
+
+// Bei der Funktion renderDayDetails(key); geht es darum die Event Informationen
+// des Tages aufzuschreiben. Dazu wurde ein ternärer Operator benutzt.
+
 function renderDayDetails(key) {
   const panel = document.getElementById("day-details");
   const [y, m, d] = key.split("-").map(Number);
@@ -104,6 +121,136 @@ function renderDayDetails(key) {
         </ul>`
     }
   `;
+}
+
+// Hier kommen die Ereignisse, die aus der API reinkommen
+function addHistoryPanel(selector) {
+  const root = document.querySelector(selector);
+  const historyPanel = document.createElement("div");
+  historyPanel.className = "history-panel";
+  historyPanel.id = "history-panel";
+
+  historyPanel.innerHTML = `
+    <h3 style="margin: 0 0 8px 0;">Historische Ereignisse</h3>
+    <p style="margin: 0; opacity: 0.85;">(Hier kommt später die API-Ausgabe rein)</p>
+  `;
+
+  root.appendChild(historyPanel);
+}
+
+// Die History durch API + tägliche Info
+const historyCache = new Map();
+
+function getGermanWeekdayName(year, monthIndex, day) {
+  const names = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+  return names[new Date(year, monthIndex, day).getDay()];
+}
+
+function nthWeekdayInMonth(day) {
+  return Math.floor((day - 1) / 7) + 1;
+}
+
+function buildDailyInfoText(key) {
+  const [y, m, d] = key.split("-").map(Number);
+  const monthIndex = m - 1;
+  const dateWritten = formatGermanDate(y, monthIndex, d);
+  const weekday = getGermanWeekdayName(y, monthIndex, d);
+  const nth = nthWeekdayInMonth(d);
+  const monthName = monthNames[monthIndex];
+
+  const holidayText = "kein";
+
+  return `Der ${dateWritten} ist ein ${weekday} und zwar der ${nth}. ${weekday} im Monat ${monthName} des Jahres ${y}. Heute ist ${holidayText} gesetzlicher Feiertag.`;
+}
+
+function addHistoryPanel(panel, events, infoText) {
+  const safeEvents = (events ?? []).slice(0, 5);
+
+  panel.innerHTML = `
+    <div class="history-split">
+      <div class="history-left">
+        <h3 style="margin:0 0 8px 0;">Historische Ereignisse</h3>
+        ${
+          safeEvents.length === 0
+            ? `<p class="muted" style="margin:0;">Keine historischen Ereignisse gefunden.</p>`
+            : `<ul class="history-list">
+                ${safeEvents.map(ev => `
+                  <li class="history-item">
+                    <span class="history-year">${ev.year ?? ""}</span>
+                    <span class="muted">${ev.text ?? ""}</span>
+                  </li>
+                `).join("")}
+              </ul>`
+        }
+      </div>
+
+      <div class="history-right">
+        <h3 style="margin:0 0 8px 0;">Heutige Information</h3>
+        <p class="muted" style="margin:0;">${infoText}</p>
+      </div>
+    </div>
+  `;
+}
+
+async function renderHistoryPanel(key) {
+  const panel = document.getElementById("history-panel");
+  if (!panel) return;
+
+  const [y, m, d] = key.split("-").map(Number);
+  const mm = String(m).padStart(2, "0");
+  const dd = String(d).padStart(2, "0");
+  const cacheKey = `${mm}-${dd}`;
+
+  const infoText = buildDailyInfoText(key);
+
+  panel.innerHTML = `
+    <div class="history-split">
+      <div class="history-left">
+        <h3 style="margin:0 0 8px 0;">Historische Ereignisse</h3>
+        <p class="muted" style="margin:0;">Lade historische Ereignisse…</p>
+      </div>
+      <div class="history-right">
+        <h3 style="margin:0 0 8px 0;">Heutige Information</h3>
+        <p class="muted" style="margin:0;">${infoText}</p>
+      </div>
+    </div>
+  `;
+
+  // Frontend-Cache nutzen
+  if (historyCache.has(cacheKey)) {
+    addHistoryPanel(panel, historyCache.get(cacheKey), infoText);
+    return;
+  }
+
+  // Backend aufrufen (Express Proxy)
+  const url = `http://localhost:3001/api/history?mm=${mm}&dd=${dd}&lang=de`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+
+    const events = Array.isArray(data.events) ? data.events : [];
+    historyCache.set(cacheKey, events);
+
+    addHistoryPanel(panel, events, infoText);
+  } catch (err) {
+    panel.innerHTML = `
+      <div class="history-split">
+        <div class="history-left">
+          <h3 style="margin:0 0 8px 0;">Historische Ereignisse</h3>
+          <p class="muted" style="margin:0;">Fehler beim Laden: ${String(err)}</p>
+        </div>
+        <div class="history-right">
+          <h3 style="margin:0 0 8px 0;">Heutige Information</h3>
+          <p class="muted" style="margin:0;">${infoText}</p>
+        </div>
+      </div>
+    `;
+  }
 }
 
 // ===== Calendar Rendering =====
@@ -168,8 +315,10 @@ function renderCalendar() {
 
 // ===== Init =====
 createBaseStructure("#calendar");
+addHistoryPanel("#calendar");
 renderCalendar();
 renderDayDetails(selectedKey);
+renderHistoryPanel(selectedKey);
 
 // Nav
 document.getElementById("prevMonth").addEventListener("click", () => {
