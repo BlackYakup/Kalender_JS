@@ -2,13 +2,17 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const PORT = 3001;
-const FRONTEND_ORIGIN = "http://localhost:5500";
+const FRONTEND_ORIGIN = new Set([
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]);
 
-app.use(
-    cors({
-        origin: FRONTEND_ORIGIN,
-    })
-);
+app.use(cors({
+    origin: (origin, cb) => {
+        if (!origin) return cb(null, true);
+        return cb(null, FRONTEND_ORIGIN.has(origin));
+    }    
+}));
 
 app.use(express.json());
 
@@ -40,7 +44,7 @@ app.get("/api/history", async (req, res) => {
         const cached = cache.get(cacheKey);
 
         if (cached && cached.expiresAt > Date.now()) {
-            return res.json({ ok:true, source: "cache", ...cache.data});
+            return res.json({ ok:true, source: "cache", ...cached.data});
         }
 
         const url = `https://api.wikimedia.org/feed/v1/wikipedia/${lang}/onthisday/events/${mm}/${dd}`;

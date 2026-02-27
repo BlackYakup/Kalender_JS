@@ -12,7 +12,7 @@ const eventsByDate = {
   // Beispiel: heutiger Tag
   [toKey(today.getFullYear(), today.getMonth(), today.getDate())]: [
     { time: "5:40", title: "Aufgestanden", note: "15 min" },
-    { time: "6:45", title: "Umschulung angefangen", note: "Javascript einbinden" }
+    { time: "8:00", title: "Node JS installiert und Express", note: "Backend erstellt" }
   ],
 
   // Beispiel: fester Tag
@@ -163,7 +163,7 @@ function buildDailyInfoText(key) {
   return `Der ${dateWritten} ist ein ${weekday} und zwar der ${nth}. ${weekday} im Monat ${monthName} des Jahres ${y}. Heute ist ${holidayText} gesetzlicher Feiertag.`;
 }
 
-function addHistoryPanel(panel, events, infoText) {
+function paintHistoryPanel(panel, events, infoText) {
   const safeEvents = (events ?? []).slice(0, 5);
 
   panel.innerHTML = `
@@ -218,7 +218,7 @@ async function renderHistoryPanel(key) {
 
   // Frontend-Cache nutzen
   if (historyCache.has(cacheKey)) {
-    addHistoryPanel(panel, historyCache.get(cacheKey), infoText);
+    paintHistoryPanel(panel, historyCache.get(cacheKey), infoText);
     return;
   }
 
@@ -236,7 +236,7 @@ async function renderHistoryPanel(key) {
     const events = Array.isArray(data.events) ? data.events : [];
     historyCache.set(cacheKey, events);
 
-    addHistoryPanel(panel, events, infoText);
+    paintHistoryPanel(panel, events, infoText);
   } catch (err) {
     panel.innerHTML = `
       <div class="history-split">
@@ -306,6 +306,7 @@ function renderCalendar() {
         selectedKey = key;
         renderCalendar();
         renderDayDetails(selectedKey);
+        renderHistoryPanel(selectedKey);
       });
     }
 
