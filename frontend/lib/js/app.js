@@ -9,13 +9,14 @@ const monthNames = [
 
 // ===== EVENTS (Beispiele) =====
 const eventsByDate = {
-  // Beispiel: heutiger Tag
+  // Zwei Events für den Tag "heute".
   [toKey(today.getFullYear(), today.getMonth(), today.getDate())]: [
     { time: "5:40", title: "Aufgestanden", note: "15 min" },
     { time: "8:00", title: "Node JS installiert und Express", note: "Backend erstellt" }
   ],
 
-  // Beispiel: fester Tag
+  // Ein anderer Tag, in diesem Fall der 14. Februar 2026, an dem ein Event
+  // stattfindet
   "2026-02-14": [
     { time: "19:00", title: "Zuhause bleiben, was sonst xD", note: "Alleine Zuhause" }
   ]
@@ -57,13 +58,15 @@ function createBaseStructure(selector) {
   root.appendChild(infoPanel);
 }
 
-// Gibt Jahr, Monat + 1 (also fängt nicht mehr bei 0, sondern bei 1 an),
-// Tag an. In diesem wird 0 benutzt, da 0 der letzte Tag des Monats ist.
+// Tag 0 wird hier benutzt, das heißt dadurch, dass ich month + 1 habe, 
+// beziehe ich mich auf den letzten Tag des aktuellen Monats, da der 
+// Tag 0 vom Folgemonat der letzte Tag des aktuellen ist. Dadurch habe ich 
+// die Anzahl der Tage im Monat.
 function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-// Monday-first (Mo=0 ... So=6)
+// Montag zuerst (Mo=0 ... So=6)
 function getFirstWeekdayOfMonth(year, month) {
   const firstDay = new Date(year, month, 1).getDay(); // So=0..Sa=6
   return firstDay === 0 ? 6 : firstDay - 1;
@@ -97,8 +100,9 @@ let selectedKey = toKey(today.getFullYear(), today.getMonth(), today.getDate());
 // ===== Right Panel Rendering =====
 
 // Bei der Funktion renderDayDetails(key); geht es darum die Event Informationen
-// des Tages aufzuschreiben. Dazu wurde ein ternärer Operator benutzt.
-
+// des Tages aufzuschreiben. Dazu wurde ein ternärer Operator benutzt, um zu
+// entscheiden, ob etwas in die Event Box reingeschrieben wird oder nur 
+// "Keine Events." stehen wird.
 function renderDayDetails(key) {
   const panel = document.getElementById("day-details");
   const [y, m, d] = key.split("-").map(Number);
