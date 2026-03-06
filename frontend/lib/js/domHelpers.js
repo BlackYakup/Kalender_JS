@@ -1,5 +1,3 @@
-import {appointmentData} from './events.js';
-
 // ########## VARIABLEN ##########
 
 const historyCache = new Map();
@@ -12,9 +10,9 @@ const COUNTRY_CODE = "DE";
 const HESSEN_SUBDIVISION = "DE-HE";
 const LANGUAGE_CODE = "DE";
 const today = new Date();
-export let viewYear = today.getFullYear();
-export let viewMonth = today.getMonth();
-export let selectedKey = toKey(today.getFullYear(), today.getMonth(), today.getDate());
+ let viewYear = today.getFullYear();
+ let viewMonth = today.getMonth();
+ let selectedKey = toKey(today.getFullYear(), today.getMonth(), today.getDate());
 
 // const monthNames = Array.from({length: 12}, (_, i) => {
 //     return new Intl.DateTimeFormat('de-DE', {month: 'long'}).format(new Date(0, i));
@@ -34,46 +32,46 @@ const monthNames = [
 // beziehe ich mich auf den letzten Tag des aktuellen Monats, da der 
 // Tag 0 vom Folgemonat der letzte Tag des aktuellen ist. Dadurch habe ich 
 // die Anzahl der Tage im Monat.
-export function daysInMonth(year, month) {
+ function daysInMonth(year, month) {
     return new Date(year, month + 1, 0).getDate();
 }
 
 // Diese Hilfsfunktion bewirkt, dass Sonntag nicht mehr der erste Tag der
 // Woche ist, sondern der letzte. Montag wird zum ersten Tag.
-export function getFirstWeekdayOfMonth(year, month) {
+ function getFirstWeekdayOfMonth(year, month) {
     const firstDay = new Date(year, month, 1).getDay();
     return firstDay === 0 ? 6 : firstDay - 1;
 }
 
 // Formatiert ins Deutsche Format.
-export function formatGermanDate(year, monthIndex, day) {
+ function formatGermanDate(year, monthIndex, day) {
     return `${pad2(day)}. ${monthNames[monthIndex]} ${year}`;
 }
 
 // Wandelt die einstelligen Tage in zweistellige mit einer 0 davor.
-export function pad2(n) {
+ function pad2(n) {
     return String(n).padStart(2, "0");
 }
 
 // toKey Funktion, um dem Key ein bestimmtes Format vorzugeben.
-export function toKey(year, monthIndex, day) {
+ function toKey(year, monthIndex, day) {
     return `${year}-${pad2(monthIndex + 1)}-${pad2(day)}`;
 }
 
 // Funktion für alle deutschen Tage in der Woche.
-export function getGermanWeekdayName(year, monthIndex, day) {
+ function getGermanWeekdayName(year, monthIndex, day) {
   const names = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
   return names[new Date(year, monthIndex, day).getDay()];
 }
 
 // Funktion zum Herausfinden der wie vielte selbe Tag des Monats es ist.
-export function nthWeekdayInMonth(day) {
+ function nthWeekdayInMonth(day) {
   return Math.floor((day - 1) / 7) + 1;
 }
 
 // Funktion zum Anzeigen des Textes wo drinsteht der wie vielte selbe Tag des
 // Monats es ist.
-export function buildDailyInfoText(key) {
+ function buildDailyInfoText(key) {
   const [y, m, d] = key.split("-").map(Number);
   const monthIndex = m - 1;
   const dateWritten = formatGermanDate(y, monthIndex, d);
@@ -87,7 +85,7 @@ export function buildDailyInfoText(key) {
 }
 
 // Funktion, die den Histrische Ereignisse Bereich darstellt.
-export function paintHistoryPanel(panel, events, infoText) {
+ function paintHistoryPanel(panel, events, infoText) {
   const safeEvents = (events ?? []).slice(0, 5);
 
   panel.innerHTML = `
@@ -116,12 +114,12 @@ export function paintHistoryPanel(panel, events, infoText) {
   `;
 }
 
-export function getEventsForDay(dateKey) {
+ function getEventsForDay(dateKey) {
     return appointmentData.filter(event => event.datum === dateKey);
 }
 
 // Funktion zum Öfnnen des Modals
-export function openEventModal() {
+ function openEventModal() {
   const overlay = document.getElementById("event-modal-overlay");
   if (!overlay) return;
 
@@ -135,14 +133,14 @@ export function openEventModal() {
 }
 
 // Funktion zum Schließen des Modals
-export function closeEventModal() {
+ function closeEventModal() {
   const overlay = document.getElementById("event-modal-overlay");
   if (!overlay) return;
 
   overlay.classList.add("hidden");
 }
 
-export function saveEvent() {
+ function saveEvent() {
 
   const dateInput = document.getElementById("event-date");
   const titleInput = document.getElementById("event-title");
@@ -202,7 +200,7 @@ function formatDateRange(startDate, endDate) {
 
 // ======== NAVIGATION FUNCTIONS ========
 
-export function goToPreviousMonth() {
+ function goToPreviousMonth() {
   viewMonth--;
   if (viewMonth < 0) {
     viewMonth = 11;
@@ -210,7 +208,7 @@ export function goToPreviousMonth() {
   }
 }
 
-export function goToNextMonth() {
+ function goToNextMonth() {
   viewMonth++;
   if (viewMonth > 11) {
     viewMonth = 0;
@@ -227,7 +225,7 @@ export function goToNextMonth() {
 // Es werden Buttons hinzugefügt und jeweils Klassen für sie.
 // Bei der Initialisierung der Funktion muss man als Parameter
 // einen selector, also in diesem Fall #calendar, angeben.
-export function createBaseStructure(selector) {
+ function createBaseStructure(selector) {
   const root = document.querySelector(selector);
 
   const header = document.createElement("div");
@@ -275,7 +273,7 @@ export function createBaseStructure(selector) {
 // des Tages aufzuschreiben. Dazu wurde ein ternärer Operator benutzt, um zu
 // entscheiden, ob etwas in die Event Box reingeschrieben wird oder nur 
 // "Keine Events." stehen wird.
-export function renderDayDetails(key) {
+ function renderDayDetails(key) {
   const panel = document.getElementById("day-details");
   const [y, m, d] = key.split("-").map(Number);
   const monthIndex = m - 1;
@@ -301,7 +299,7 @@ export function renderDayDetails(key) {
 
 
 // Hier kommen die Ereignisse, die aus der API reinkommen
-export function addHistoryPanel(selector) {
+ function addHistoryPanel(selector) {
   const root = document.querySelector(selector);
   const historyPanel = document.createElement("div");
   historyPanel.className = "history-panel";
@@ -316,7 +314,7 @@ export function addHistoryPanel(selector) {
 }
 
 // Die komplette Logik hinter dem Historische Ereignisse Bereich.
-export async function renderHistoryPanel(key) {
+ async function renderHistoryPanel(key) {
   const panel = document.getElementById("history-panel");
   if (!panel) return;
 
@@ -378,7 +376,7 @@ export async function renderHistoryPanel(key) {
 }
 
 // ===== Calendar Rendering =====
-export function renderCalendar() {
+ function renderCalendar() {
   const monthDisplay = document.querySelector(".selected-month");
   monthDisplay.textContent = `${monthNames[viewMonth]} ${viewYear}`;
 
@@ -439,7 +437,7 @@ export function renderCalendar() {
 }
 
 // API für Feiertage
-export async function fetchPublicHolidaysForYear(year) {
+ async function fetchPublicHolidaysForYear(year) {
   const cacheKey = `public-${year}`;
   if (holidayCache.has(cacheKey)) {
     return holidayCache.get(cacheKey);
@@ -471,7 +469,7 @@ export async function fetchPublicHolidaysForYear(year) {
 }
 
 // API für Schulferien.
-export async function fetchSchoolHolidaysForYear(year) {
+ async function fetchSchoolHolidaysForYear(year) {
   const cacheKey = `school-${year}-${HESSEN_SUBDIVISION}`;
   if (schoolHolidayCache.has(cacheKey)) {
     return schoolHolidayCache.get(cacheKey);
@@ -504,7 +502,7 @@ export async function fetchSchoolHolidaysForYear(year) {
 }
 
 // Das Rendern der Oberfläche der Feiertage und Schulferien.
-export async function renderHolidayPanel(year) {
+ async function renderHolidayPanel(year) {
   const panel = document.getElementById("holiday-panel");
   if (!panel) return;
 
@@ -589,7 +587,7 @@ export async function renderHolidayPanel(year) {
 }
 
 // Erstellen meines Modal Fensters
-export function createEventModal() {
+ function createEventModal() {
   const existingModal = document.getElementById("event-modal-overlay");
   if (existingModal) return;
 

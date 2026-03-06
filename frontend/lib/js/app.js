@@ -1,20 +1,3 @@
-import {
-  createBaseStructure,
-  createEventModal,
-  addHistoryPanel,
-  renderCalendar,
-  renderDayDetails,
-  renderHistoryPanel,
-  renderHolidayPanel,
-  selectedKey,
-  viewYear,
-  goToPreviousMonth,
-  goToNextMonth,
-  openEventModal,
-  closeEventModal,
-  saveEvent
-} from './domHelpers.js';
-
 // ===== Init =====
 createBaseStructure("#calendar");
 createEventModal();

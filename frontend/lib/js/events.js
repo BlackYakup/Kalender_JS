@@ -1,4 +1,4 @@
-export const appointmentData = [
+const appointmentData = [
     {
         id: 1,
         datum: "2026-08-21",
